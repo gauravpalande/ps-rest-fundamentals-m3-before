@@ -1,6 +1,6 @@
 import express from "express";
 import { get } from "http";
-import { getItemDetail, getItems, upsertItem } from "./items.service";
+import { deleteItem, getItemDetail, getItems, upsertItem } from "./items.service";
 import { validate } from "../../middleware/validation.middleware";
 import { idItemIdUUIDRequestSchema, itemPOSTRequestSchema } from "../types";
 
@@ -35,6 +35,16 @@ itemsRouter.post("/", validate(itemPOSTRequestSchema), async (req, res) => {
   }
   newItem.imageUrl = buildImageUrl(req, newItem.id);
   res.status(201).json(newItem);
+});
+
+itemsRouter.delete("/:id", validate(idItemIdUUIDRequestSchema), async (req, res) => {
+  const data = idItemIdUUIDRequestSchema.parse(req);
+  const id = parseInt(data.params.id);
+  const item = await deleteItem(id);
+  if (!item) {
+    return res.status(404).json({ error: "Item not found" });
+  }
+  res.status(204).send();
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars

@@ -1,6 +1,6 @@
 import express from "express";
 import { parse } from "path";
-import { addOrderItems, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
+import { addOrderItems, deleteOrder, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
 import { validate } from "../../middleware/validation.middleware";
 import { idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
 
@@ -28,4 +28,13 @@ ordersRouter.post("/:id/items", validate(orderItemsDTORequestSchema), async (req
         return res.status(500).json({ error: "Failed to create order" });
     }
     res.status(201).json(newOrder);
+});
+
+ordersRouter.delete("/:id", validate(idUUIDRequestSchema), async (req, res) => {
+    const data = idUUIDRequestSchema.parse(req);
+    const order = await deleteOrder(data.params.id);
+    if (!order) {
+        return res.status(404).json({ error: "Order not deleted" });
+    }
+    res.json(order);
 });
