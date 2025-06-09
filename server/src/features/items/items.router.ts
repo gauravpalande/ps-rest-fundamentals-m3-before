@@ -10,6 +10,7 @@ itemsRouter.get("/", async (req, res) => {
     item.imageUrl = buildImageUrl(req, item.id);
   });
   res.json(items);
+});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 function buildImageUrl(req: any, id: number): string {

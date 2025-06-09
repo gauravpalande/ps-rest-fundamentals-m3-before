@@ -1,0 +1,2 @@
+### Get Request Example
+GET http://localhost:4000/api/items
