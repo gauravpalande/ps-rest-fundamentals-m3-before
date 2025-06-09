@@ -1,8 +1,8 @@
 import express from "express";
-import { getCustomerDetail, getCustomers, searchCustomers } from "./customers.service";
+import { getCustomerDetail, getCustomers, searchCustomers, upsertCustomer } from "./customers.service";
 import { getOrdersForCustomer } from "../orders/orders.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idUUIDRequestSchema } from "../types";
+import { customerPOSTRequestSchema, idUUIDRequestSchema } from "../types";
 
 export const customersRouter = express.Router();
 
@@ -37,4 +37,13 @@ customersRouter.get("/search/:query", async (req, res) => {
         return res.status(404).json({ error: "No customers found" });
     }
     res.json(customers);
+});
+
+customersRouter.post("/", validate(customerPOSTRequestSchema), async (req, res) => {
+    var data = customerPOSTRequestSchema.parse(req);
+    const newCustomer = await upsertCustomer(data.body);
+    if (!newCustomer) {
+        return res.status(500).json({ error: "Failed to create customer" });
+    }
+    res.status(201).json(newCustomer);
 });

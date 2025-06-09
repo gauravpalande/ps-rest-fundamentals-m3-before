@@ -1,8 +1,8 @@
 import express from "express";
 import { parse } from "path";
-import { getOrderDetail, getOrders } from "./orders.service";
+import { addOrderItems, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idUUIDRequestSchema, pagingRequestSchema } from "../types";
+import { idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
 
 export const ordersRouter = express.Router();
 
@@ -19,4 +19,13 @@ ordersRouter.get("/:id", validate(idUUIDRequestSchema), async (req, res) => {
         return res.status(404).json({ error: "Order not found" });
     }
     res.json(order);
+});
+
+ordersRouter.post("/:id/items", validate(orderItemsDTORequestSchema), async (req, res) => {
+    var data = orderItemsDTORequestSchema.parse(req);
+    const newOrder = await addOrderItems(data.params.id, data.body);
+    if (!newOrder) {
+        return res.status(500).json({ error: "Failed to create order" });
+    }
+    res.status(201).json(newOrder);
 });
