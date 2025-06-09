@@ -1,25 +1,22 @@
 import express from "express";
 import { parse } from "path";
-import { getOrders } from "./orders.service";
+import { getOrderDetail, getOrders } from "./orders.service";
+import { validate } from "../../middleware/validation.middleware";
+import { idUUIDRequestSchema, pagingRequestSchema } from "../types";
 
 export const ordersRouter = express.Router();
 
-ordersRouter.get("/", async (req, res) => {
-    const query = req.query;
-    const take = query.take;
-    const skip = query.skip;
+ordersRouter.get("/", validate(pagingRequestSchema), async (req, res) => {
+    const data = pagingRequestSchema.parse(req);
+    const orders = await getOrders(data.query.skip, data.query.take);
+    res.json(orders);
+});
 
-    if (
-        typeof take === "string" &&
-        parseInt(take) > 0 &&
-        skip &&
-        typeof skip === "string" &&
-        parseInt(skip) > -1
-    ) {
-        const orders = await getOrders(parseInt(skip), parseInt(take));
-        res.json(orders);
-    } else{
-        return res.status(400).json({ message: "Take and skip query parameters are required. " +
-            "Take must be greater than 0 and skip must be greater than -1",
-         });
-    }});
+ordersRouter.get("/:id", validate(idUUIDRequestSchema), async (req, res) => {
+    const data = idUUIDRequestSchema.parse(req);
+    const order = await getOrderDetail(data.params.id);
+    if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+    }
+    res.json(order);
+});
