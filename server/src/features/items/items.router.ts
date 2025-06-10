@@ -2,7 +2,8 @@ import express from "express";
 import { get } from "http";
 import { deleteItem, getItemDetail, getItems, upsertItem } from "./items.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idItemIdUUIDRequestSchema, itemPOSTRequestSchema } from "../types";
+import { idItemIdUUIDRequestSchema, idNumberRequestSchema, itemPOSTRequestSchema } from "../types";
+import { INVALID } from "zod";
 
 export const itemsRouter = express.Router();
 
@@ -14,10 +15,9 @@ itemsRouter.get("/", async (req, res) => {
   res.json(items);
 });
 
-itemsRouter.get("/:id", validate(idItemIdUUIDRequestSchema), async (req, res) => {
-  const data = idItemIdUUIDRequestSchema.parse(req);
-  const id = parseInt(data.params.id);
-  const item  = await getItemDetail(id);
+itemsRouter.get("/:id", validate(idNumberRequestSchema), async (req, res) => {
+  const data = idNumberRequestSchema.parse(req);
+  const item  = await getItemDetail(data.params.id);
   if (!item) {
     return res.status(404).json({ error: "Item not found" });
   }
@@ -37,10 +37,9 @@ itemsRouter.post("/", validate(itemPOSTRequestSchema), async (req, res) => {
   res.status(201).json(newItem);
 });
 
-itemsRouter.delete("/:id", validate(idItemIdUUIDRequestSchema), async (req, res) => {
-  const data = idItemIdUUIDRequestSchema.parse(req);
-  const id = parseInt(data.params.id);
-  const item = await deleteItem(id);
+itemsRouter.delete("/:id", validate(idNumberRequestSchema), async (req, res) => {
+  const data = idNumberRequestSchema.parse(req);
+  const item = await deleteItem(data.params.id);
   if (!item) {
     return res.status(404).json({ error: "Item not found" });
   }

@@ -1,8 +1,8 @@
 import express from "express";
 import { parse } from "path";
-import { addOrderItems, deleteOrder, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
+import { addOrderItems, deleteOrder, deleteOrderItem, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
+import { idItemIdUUIDRequestSchema, idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
 
 export const ordersRouter = express.Router();
 
@@ -35,6 +35,15 @@ ordersRouter.delete("/:id", validate(idUUIDRequestSchema), async (req, res) => {
     const order = await deleteOrder(data.params.id);
     if (!order) {
         return res.status(404).json({ error: "Order not deleted" });
+    }
+    res.json(order);
+});
+
+ordersRouter.delete("/:id/items/:itemId", validate(idItemIdUUIDRequestSchema), async (req, res) => {
+    const data = idItemIdUUIDRequestSchema.parse(req);
+    const order = await deleteOrderItem(data.params.id, data.params.itemId);
+    if (!order) {
+        return res.status(404).json({ error: "Order item not deleted" });
     }
     res.json(order);
 });
