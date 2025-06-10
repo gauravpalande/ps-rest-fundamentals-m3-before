@@ -2,7 +2,7 @@ import express from "express";
 import { parse } from "path";
 import { addOrderItems, deleteOrder, deleteOrderItem, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
 import { validate } from "../../middleware/validation.middleware";
-import { idItemIdUUIDRequestSchema, idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, pagingRequestSchema } from "../types";
+import { idItemIdUUIDRequestSchema, idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, orderPUTRequestSchema, pagingRequestSchema } from "../types";
 
 export const ordersRouter = express.Router();
 
@@ -46,4 +46,15 @@ ordersRouter.delete("/:id/items/:itemId", validate(idItemIdUUIDRequestSchema), a
         return res.status(404).json({ error: "Order item not deleted" });
     }
     res.json(order);
+});
+
+ordersRouter.put("/:id", validate(orderPUTRequestSchema), async (req, res) => {
+    const data = orderPUTRequestSchema.parse(req);
+    const orderData = { customerId: "", ...data.body }; // Assuming customerId is optional and can be empty
+    const updatedOrder = await upsertOrder(orderData, data.params.id);
+
+    if (!updatedOrder) {
+        return res.status(404).json({ error: "Order not found" });
+    }
+    res.json(updatedOrder);
 });

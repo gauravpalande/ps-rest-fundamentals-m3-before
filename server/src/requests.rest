@@ -1,5 +1,10 @@
 ### Get Request Example
 GET http://localhost:4000/api/items
+Accept: application/xml
+
+### Get Request Example with ID
+GET http://localhost:4000/api/items/30
+Accept: application/xml
 
 ### post Request Example
 POST http://localhost:4000/api/items
@@ -8,4 +13,14 @@ Content-Type: application/json
 {
   "name": "Bike helmet",
   "description": "keeps your head safe"
+}
+
+### post Request Example 2
+POST http://localhost:4000/api/customers
+Accept: application/xml
+Content-Type: application/xml
+
+{
+  "name": "John Doe",
+  "email": "Jdoe@gmail.com"
 }
