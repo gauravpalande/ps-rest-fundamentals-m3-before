@@ -3,6 +3,7 @@ import { parse } from "path";
 import { addOrderItems, deleteOrder, deleteOrderItem, getOrderDetail, getOrders, upsertOrder } from "./orders.service";
 import { validate } from "../../middleware/validation.middleware";
 import { idItemIdUUIDRequestSchema, idUUIDRequestSchema, orderItemsDTORequestSchema, orderPOSTRequestSchema, orderPUTRequestSchema, pagingRequestSchema } from "../types";
+import { create } from "xmlbuilder2";
 
 export const ordersRouter = express.Router();
 
@@ -57,4 +58,24 @@ ordersRouter.put("/:id", validate(orderPUTRequestSchema), async (req, res) => {
         return res.status(404).json({ error: "Order not found" });
     }
     res.json(updatedOrder);
+});
+
+ordersRouter.post("/", validate(orderPOSTRequestSchema), async (req, res) => {
+  const data = orderPOSTRequestSchema.parse(req);
+  const order = await upsertOrder(data.body);
+  if (order != null) {
+    if (req.headers["accept"] == "application/xml") {
+      res.status(201).send(create().ele("order", order).end());
+    } else {
+      res.status(201).json(order);
+    }
+  } else {
+    if (req.headers["accept"] == "application/xml") {
+      res
+        .status(500)
+        .send(create().ele("error", { message: "Creation failed" }).end());
+    } else {
+      res.status(500).json({ message: "Creation failed" });
+    }
+  }
 });
